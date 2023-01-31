@@ -51,7 +51,7 @@ namespace Minegame
 
         public void OnVehicleMoved(object ?source, PlayerEventArgs e)
         {
-            if (position.PositionMatch(e.player?.position) && !Exploded)
+            if (position.PositionMatch(e.Player?.position) && !Exploded)
             {
                 Exploded = true;
                 OnLandMineExploded();

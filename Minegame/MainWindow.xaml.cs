@@ -22,56 +22,42 @@ namespace Minegame
     public partial class MainWindow : Window
     {
 
-        DispatcherTimer GameTimer = new DispatcherTimer();
-
-        Player player = new Player(new Position(1,1), "Levi", 100, 3);
-        List<LandMine> mines = new List<LandMine>();
-        List<Projectile> projectiles= new List<Projectile>();
+        DispatcherTimer GameTimer;
+        Player player;
+        List<LandMine> mines;
+        List<Projectile> projectiles;
 
         public MainWindow()
         {
             InitializeComponent();
-            myCanvas.Focus();
-            myCanvas.Loaded += MyCanvas_Loaded;
-
-            GameTimer.Tick +=GameTimer_Tick;
-            GameTimer.Interval = TimeSpan.FromMilliseconds(20);
-            GameTimer.Start();
-
+            StartGame();
         }
 
-        private void MyCanvas_Loaded(object sender, RoutedEventArgs e)
+        private void StartGame()
         {
-            //Vertical lines
-            /*
-            for(int i = 0; i < myCanvas.ActualWidth; i+=20)
-            {
-                Line line = new Line();
-                line.Stroke = System.Windows.Media.Brushes.Black;
-                line.SnapsToDevicePixels = true;
-                line.X1 = i;
-                line.Y1 = 0;
-                line.X2 = i;
-                line.Y2 = myCanvas.ActualHeight;
-                myCanvas.Children.Add(line);
-            }
-            //Horizontal lines
-            for (int i = 0; i < myCanvas.ActualHeight; i += 20)
-            {
-                Line line = new Line();
-                line.Stroke = System.Windows.Media.Brushes.Black;
-                line.SnapsToDevicePixels = true;
-                line.X1 = 0;
-                line.Y1 = i;
-                line.X2 = myCanvas.ActualWidth;
-                line.Y2 = i;
-                myCanvas.Children.Add(line);
-            }*/
+            myCanvas.Children.Clear();
+
+            //Init variables
+            GameTimer = new DispatcherTimer();
+            player = new Player(new Position(1, 1), "Levi", 100, 3);
+            mines = new List<LandMine>();
+            projectiles = new List<Projectile>();
 
             //Mines
             mines.Add(new LandMine(new Position(50, 100), false, 50));
             mines.Add(new LandMine(new Position(50, 170), false, 50));
+            InitGameElements();
 
+            player.PlayerDied += Player_PlayerDied;
+            GameTimer.Tick += GameTimer_Tick;
+            GameTimer.Interval = TimeSpan.FromMilliseconds(20);
+
+            myCanvas.Focus();
+            GameTimer.Start();
+        }
+
+        private void InitGameElements()
+        {
             foreach (LandMine mine in mines)
             {
                 TextBlock text = new TextBlock();
@@ -89,7 +75,7 @@ namespace Minegame
                 mine.text = text;
 
                 Canvas.SetLeft(text, mine.position.left + (ellipse.Height / 2) - text.FontSize);
-                Canvas.SetTop(text, mine.position.top + (ellipse.Height/2) - text.FontSize);
+                Canvas.SetTop(text, mine.position.top + (ellipse.Height / 2) - text.FontSize);
 
                 Canvas.SetLeft(ellipse, mine.position.left);
                 Canvas.SetTop(ellipse, mine.position.top);
@@ -99,7 +85,16 @@ namespace Minegame
                 myCanvas.Children.Add(text);
                 myCanvas.Children.Add(ellipse);
             }
+        }
 
+        private void Player_PlayerDied(object? sender, PlayerEventArgs e)
+        {
+            var Result = MessageBox.Show("Would you like to play again?", "You died!", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (Result == MessageBoxResult.Yes)
+                StartGame();
+            else
+                Environment.Exit(0);
         }
 
         private void GameTimer_Tick(object? sender, EventArgs e)
@@ -164,8 +159,7 @@ namespace Minegame
                 }
                 else
                 {
-                    //player.Health -= 
-                    player.Health -= projectile.Damage;
+                    player.TakeDamage(projectile.Damage);
                     healthBar.Value = player.Health;
                     myCanvas.Children.Remove(projectile.Ellipse);
                     ToRemove.Add(projectile);
@@ -226,7 +220,8 @@ namespace Minegame
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            player.wave1 = true;
+            if(player != null)
+                player.wave1 = true;
         }
 
         private void enableAttack_Unchecked(object sender, RoutedEventArgs e)

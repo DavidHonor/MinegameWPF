@@ -9,7 +9,7 @@ namespace Minegame
 {
     class PlayerEventArgs : EventArgs
     {
-        public Player ? player { get; set; }
+        public Player ? Player { get; set; }
     }
     class Player
     {
@@ -22,7 +22,7 @@ namespace Minegame
         public int Radar { get; set; }
         public bool RadarActive { get; set; }
 
-        public bool goLeft, goRight, goUp, goDown, wave1 = false;
+        public bool goLeft, goRight, goUp, goDown, wave1 = true;
 
         public Player(Position position, string name, int health, int radar) 
         { 
@@ -75,13 +75,31 @@ namespace Minegame
         {
             if(PlayerMoved != null)
             {
-                PlayerMoved(this, new PlayerEventArgs() { player = this});
+                PlayerMoved(this, new PlayerEventArgs() { Player = this});
             }
         }
 
         public void OnLandMineExploded(object? source, LandMineEventArgs e)
         {
             Health -= e.LandMine.Damage;
+        }
+
+        public void TakeDamage(int damage)
+        {
+            if(Health - damage > 0)
+                Health -= damage;
+            else
+                OnPlayerDied();
+        }
+
+        public event EventHandler<PlayerEventArgs> PlayerDied;
+
+        protected virtual void OnPlayerDied()
+        {
+            if(PlayerDied!= null)
+            {
+                PlayerDied(this, new PlayerEventArgs() { Player = this });
+            }
         }
     }
 }
