@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Shapes;
 
 namespace Minegame
 {
@@ -14,6 +15,7 @@ namespace Minegame
     class Player
     {
         public Position position;
+        public Ellipse Ellipse { get; set; }
 
         public int playerSpeed = 5;
         public string Name { get; set; }

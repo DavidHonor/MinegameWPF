@@ -23,13 +23,10 @@
         <Label Grid.Row="0" Grid.Column="1"  Content="Health" HorizontalAlignment="Right"/>
         <ProgressBar Grid.Row="0" Grid.Column="2" x:Name="healthBar" Height="11" Width="129" Value="100"/>
         <CheckBox Grid.Row="0" Grid.Column="3" Content="Enable attack" x:Name="enableAttack" Checked="CheckBox_Checked" Unchecked="enableAttack_Unchecked" Focusable="False" IsChecked="True" VerticalAlignment="Center"/>
-        
 
-        <Canvas Grid.Row="1" Grid.ColumnSpan="4" x:Name="myCanvas" Focusable="True" KeyDown="myCanvas_KeyDown" KeyUp="myCanvas_KeyUp" Margin="0,0,0,0">
-            <Rectangle x:Name="Player" Width="50" Height="50" Fill="Blue" Canvas.Top="42" Canvas.Left="668" />
-        </Canvas>
-        
-       
+        <Canvas Grid.Row="1" Grid.ColumnSpan="4" x:Name="myCanvas" Focusable="True" KeyDown="myCanvas_KeyDown" KeyUp="myCanvas_KeyUp" Margin="0,0,0,0"></Canvas>
+
+
 
     </Grid>
 </Window>

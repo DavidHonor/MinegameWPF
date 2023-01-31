@@ -23,8 +23,8 @@ namespace Minegame
     {
 
         DispatcherTimer GameTimer;
-        Player player;
-        List<LandMine> mines;
+        Player Player;
+        List<LandMine> Mines;
         List<Projectile> projectiles;
 
         public MainWindow()
@@ -35,20 +35,21 @@ namespace Minegame
 
         private void StartGame()
         {
+            //Clear variables
             myCanvas.Children.Clear();
+            if(GameTimer != null)
+                GameTimer.Stop();
 
             //Init variables
             GameTimer = new DispatcherTimer();
-            player = new Player(new Position(1, 1), "Levi", 100, 3);
-            mines = new List<LandMine>();
+            Player = new Player(new Position(1, 1), "Levi", 100, 3);
+            Mines = new List<LandMine>();
             projectiles = new List<Projectile>();
 
-            //Mines
-            mines.Add(new LandMine(new Position(50, 100), false, 50));
-            mines.Add(new LandMine(new Position(50, 170), false, 50));
+            //Create game elements
             InitGameElements();
 
-            player.PlayerDied += Player_PlayerDied;
+            Player.PlayerDied += Player_PlayerDied;
             GameTimer.Tick += GameTimer_Tick;
             GameTimer.Interval = TimeSpan.FromMilliseconds(20);
 
@@ -58,7 +59,23 @@ namespace Minegame
 
         private void InitGameElements()
         {
-            foreach (LandMine mine in mines)
+            //Create player
+            Ellipse playerEllipse = new Ellipse();
+            playerEllipse.Width = 40;
+            playerEllipse.Height = 40;
+            playerEllipse.Fill = new SolidColorBrush(Colors.Green);
+
+            Canvas.SetLeft(playerEllipse, 420);
+            Canvas.SetTop(playerEllipse, 135);
+
+            Player.Ellipse = playerEllipse;
+            myCanvas.Children.Add(playerEllipse);
+
+            //Create mines
+            Mines.Add(new LandMine(new Position(50, 100), false, 50));
+            Mines.Add(new LandMine(new Position(50, 170), false, 50));
+
+            foreach (LandMine mine in Mines)
             {
                 TextBlock text = new TextBlock();
                 text.Text = "debug";
@@ -99,38 +116,39 @@ namespace Minegame
 
         private void GameTimer_Tick(object? sender, EventArgs e)
         {
-            if (player.goLeft && Canvas.GetLeft(Player) > 0)
+            debugLabel.Content = $"active Uid: {Canvas.GetLeft(Player.Ellipse)}";
+            if (Player.goLeft && Canvas.GetLeft(Player.Ellipse) > 0)
             {
-                Canvas.SetLeft(Player, Canvas.GetLeft(Player) - player.playerSpeed);
+                Canvas.SetLeft(Player.Ellipse, Canvas.GetLeft(Player.Ellipse) - Player.playerSpeed);
             }
-            if(player.goRight && Canvas.GetLeft(Player) + (Player.Width + 20) < Application.Current.MainWindow.Width)
+            if(Player.goRight && Canvas.GetLeft(Player.Ellipse) + (Player.Ellipse.Width + 20) < Application.Current.MainWindow.Width)
             {
-                Canvas.SetLeft(Player, Canvas.GetLeft(Player) + player.playerSpeed);
+                Canvas.SetLeft(Player.Ellipse, Canvas.GetLeft(Player.Ellipse) + Player.playerSpeed);
             }
-            if(player.goUp && Canvas.GetTop(Player) > 0)
+            if(Player.goUp && Canvas.GetTop(Player.Ellipse) > 0)
             {
-                Canvas.SetTop(Player, Canvas.GetTop(Player) - player.playerSpeed);
+                Canvas.SetTop(Player.Ellipse, Canvas.GetTop(Player.Ellipse) - Player.playerSpeed);
             }
-            if(player.goDown && Canvas.GetTop(Player) + (Player.Height * 2) < Application.Current.MainWindow.Height)
+            if(Player.goDown && Canvas.GetTop(Player.Ellipse) + (Player.Ellipse.Height * 2) < Application.Current.MainWindow.Height)
             {
-                Canvas.SetTop(Player, Canvas.GetTop(Player) + player.playerSpeed);
+                Canvas.SetTop(Player.Ellipse, Canvas.GetTop(Player.Ellipse) + Player.playerSpeed);
             }
 
             //Update player position
-            player.position.left = Canvas.GetLeft(Player);
-            player.position.top = Canvas.GetTop(Player);
+            Player.position.left = Canvas.GetLeft(Player.Ellipse);
+            Player.position.top = Canvas.GetTop(Player.Ellipse);
 
-            //Check landmines distance from player
-            foreach (LandMine mine in mines)
+            //Check landMines distance from player
+            foreach (LandMine mine in Mines)
             {
-                double distance = mine.IsNearby(player.position);
+                double distance = mine.IsNearby(Player.position);
                 if (distance < mine.ellipse.Width + 2)
                     mine.ellipse.Fill = new SolidColorBrush(Colors.Blue);
-                else if (distance < 400 && player.wave1) LaunchProjectile(mine);
+                else if (distance < 400 && Player.wave1) LaunchProjectile(mine);
 
                 mine.text.Text = $"{Math.Round(distance, 0)}";
             }
-            debugLabel.Content = $"active projectiles: {projectiles.Count}";
+            
 
 
             //Move projectiles
@@ -159,8 +177,8 @@ namespace Minegame
                 }
                 else
                 {
-                    player.TakeDamage(projectile.Damage);
-                    healthBar.Value = player.Health;
+                    Player.TakeDamage(projectile.Damage);
+                    healthBar.Value = Player.Health;
                     myCanvas.Children.Remove(projectile.Ellipse);
                     ToRemove.Add(projectile);
                 }
@@ -186,13 +204,13 @@ namespace Minegame
             {
 
                 Projectile projectile = new Projectile();
-                projectile.Target = player.position;
-                projectile.Speed = player.playerSpeed * 1.2;
+                projectile.Target = Player.position;
+                projectile.Speed = Player.playerSpeed * 1.2;
                 projectile.Ellipse = new Ellipse();
 
                 projectile.Ellipse.Width = 20;
                 projectile.Ellipse.Height = 20;
-                projectile.Ellipse.Fill = new SolidColorBrush(Colors.Green);
+                projectile.Ellipse.Fill = new SolidColorBrush(Colors.DarkRed);
                 projectile.Lifetime = new Stopwatch();
                 projectile.Lifetime.Start();
 
@@ -210,23 +228,23 @@ namespace Minegame
 
         private void myCanvas_KeyDown(object sender, KeyEventArgs e)
         {
-            player.PlayerAction(e.Key, true);
+            Player.PlayerAction(e.Key, true);
         }
 
         private void myCanvas_KeyUp(object sender, KeyEventArgs e)
         {
-            player.PlayerAction(e.Key, false);
+            Player.PlayerAction(e.Key, false);
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            if(player != null)
-                player.wave1 = true;
+            if(Player != null)
+                Player.wave1 = true;
         }
 
         private void enableAttack_Unchecked(object sender, RoutedEventArgs e)
         {
-            player.wave1 = false;
+            Player.wave1 = false;
         }
     }
 }
